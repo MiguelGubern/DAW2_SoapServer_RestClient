@@ -1,7 +1,5 @@
-# DAW2_SoapServer_RestClient
-Cliente java que conecta con un servidor Soap para una transformación y enviarla a otro servidor Rest (drupal)
-
 # DAW2 Práctica 3 (Soap & Rest Services)
+Cliente java que conecta con un servidor Soap para una transformación y enviarla a otro servidor Rest (drupal)
 
 ### JavaClient
 - Pide un integer, que será el id del Post a modificar.
