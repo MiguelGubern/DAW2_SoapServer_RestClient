@@ -25,7 +25,7 @@ public class PasionJaponClient {
 		boolean existPath = false;
 		String toModifyTile = "";
 		do {
-			System.out.print("Introduzca un ID de artículo (Post) que quiera modificar: ");
+			System.out.print("Introduzca un ID de un contenido tipo Post que quiera modificar: ");
 			int postId = keyboard.nextInt();
 			System.out.println();
 			try {
@@ -34,14 +34,26 @@ public class PasionJaponClient {
 		    	client.accept("application/xml");
 		    	client.path("node/" + postId);
 				Post post = client.get(Post.class);
-				toModifyTile = post.getTitle();
-				existPath = true;
+				if (post.getType().equalsIgnoreCase("post")) {
+					toModifyTile = post.getTitle();
+					existPath = true;
+				} else {
+					System.out.println("Introduce un ID de un contenido tipo Post.");
+					System.out.println();
+					existPath = false;
+				}
 			} catch (javax.ws.rs.NotFoundException e) {
-				System.out.println("Introduce un ID de artículo existente.");
+				System.out.println("Introduce un ID de un contenido tipo Post existente.");
 				System.out.println();
 				existPath = false;
 			}
 		} while (!existPath);
+		
+		// Soap Server Call - Converting title string
+		
+		// Async Petition
+		SoapAsyncRequest soapCall = new SoapAsyncRequest(toModifyTile);
+		soapCall.start();
 		
 		// Get Token
 		client.back(true);
@@ -63,13 +75,13 @@ public class PasionJaponClient {
 		client.back(true);
 		client.path("node/83");
 		
-		// Soap Server Call - Converting title string
-		SimpleService_P1_Client soapClient = new SimpleService_P1_Client();
-		String modifiedTitle = soapClient.modifyDrupalTitle(toModifyTile);
-		
 		// Prepare Put - Building body
 		form = new Form();
-		form.set("title", modifiedTitle);
+		try {
+			soapCall.join(); // wait for async request if needed
+		} catch (InterruptedException e) {}
+		String soapResponse = soapCall.getModifiedTitle();
+		form.set("title", soapResponse);
 		
 		// Prepare Put - Building headers
 		client.header("cookie", usuario.getSessionName() + "=" + usuario.getSessid());
@@ -83,11 +95,12 @@ public class PasionJaponClient {
 		client.path("user/logout");
 		client.post(null, String.class);
 		
+		System.out.println();
 		System.out.println("¡Título Cambiado!");
 		System.out.println("Original = " + toModifyTile);
-		System.out.println("Modificado = " + modifiedTitle);
-		System.out.println("----------------");
-		System.out.println("Práctica 3 DAW2:");
+		System.out.println("Modificado = " + soapResponse);
+		System.out.println();
+		System.out.println("Práctica 3 DAW2 - Grupo 7:");
 		System.out.println("- Alejandro López Santos");
 		System.out.println("- Santiago Miguel Gubern González");
 	}
